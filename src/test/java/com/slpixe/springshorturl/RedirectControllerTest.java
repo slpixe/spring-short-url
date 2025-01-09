@@ -20,7 +20,7 @@ class RedirectControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private IUrlRepo urlRepo;
+    private UrlRepo urlRepo;
 
     @Test
     void shouldRedirectToGoogle() throws Exception {

@@ -11,7 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class RedirectController {
 
     @Autowired
-    private IUrlRepo urlRepo;
+    private UrlRepo urlRepo;
 
     @GetMapping("/a")
     public String redirectToGoogle() {
@@ -24,7 +24,7 @@ public class RedirectController {
     }
 
     @GetMapping("/s/{shortUrl}")
-    public String redirectToDbLond(@PathVariable String shortUrl) {
+    public String redirectToFullUrl(@PathVariable String shortUrl) {
         return urlRepo.findByShortUrl(shortUrl)
                 .map(urlModel -> "redirect:" + urlModel.getFullUrl())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Short URL not found"));
