@@ -1,10 +1,10 @@
-package com.example.demo.entity;
+package com.slpixe.springshorturl;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "URL")
+@Table(name = "url")
 @Data // Combines @Getter, @Setter, @ToString, @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
