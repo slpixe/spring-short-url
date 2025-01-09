@@ -25,24 +25,24 @@ public class UrlRepoTests {
     @Test
     public void testSaveUrlModel() {
         UrlModel urlModel = new UrlModel();
-        urlModel.setShortUrl("short123");
+        urlModel.setShortUrl("short111");
         urlModel.setFullUrl("https://example.com/full-url");
 
         UrlModel savedUrlModel = UrlRepo.save(urlModel);
 
         assertNotNull(savedUrlModel.getId());
-        assertEquals("short123", savedUrlModel.getShortUrl());
+        assertEquals("short111", savedUrlModel.getShortUrl());
         assertEquals("https://example.com/full-url", savedUrlModel.getFullUrl());
     }
 
     @Test
     public void testFindByShortUrl() {
         UrlModel urlModel = new UrlModel();
-        urlModel.setShortUrl("short456");
+        urlModel.setShortUrl("short222");
         urlModel.setFullUrl("https://example.com/another-url");
         UrlRepo.save(urlModel);
 
-        Optional<UrlModel> foundUrlModel = UrlRepo.findByShortUrl("short456");
+        Optional<UrlModel> foundUrlModel = UrlRepo.findByShortUrl("short222");
 
         assertTrue(foundUrlModel.isPresent());
         assertEquals("https://example.com/another-url", foundUrlModel.get().getFullUrl());
