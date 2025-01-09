@@ -4,3 +4,7 @@ build
 gradle
 gradlew
 gradlew.bat
+.aidigestignore
+.gitattributes
+.gitignore
+HELP.md

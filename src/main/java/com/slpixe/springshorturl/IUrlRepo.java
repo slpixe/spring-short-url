@@ -5,7 +5,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface UrlRepo extends JpaRepository<UrlModel, Long> {
+public interface IUrlRepo extends JpaRepository<UrlModel, Long> {
 
     Optional<UrlModel> findByShortUrl(String shortUrl);
 

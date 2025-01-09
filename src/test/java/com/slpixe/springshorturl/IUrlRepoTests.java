@@ -11,10 +11,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @Import(TestcontainersConfiguration.class)
 @DataJpaTest
-public class UrlRepoTests {
+public class IUrlRepoTests {
 
     @Autowired
-    private UrlRepo urlRepo;
+    private IUrlRepo IUrlRepo;
 
     @Test
     public void testSaveUrlModel() {
@@ -22,7 +22,7 @@ public class UrlRepoTests {
         urlModel.setShortUrl("short123");
         urlModel.setFullUrl("https://example.com/full-url");
 
-        UrlModel savedUrlModel = urlRepo.save(urlModel);
+        UrlModel savedUrlModel = IUrlRepo.save(urlModel);
 
         assertNotNull(savedUrlModel.getId());
         assertEquals("short123", savedUrlModel.getShortUrl());
@@ -34,9 +34,9 @@ public class UrlRepoTests {
         UrlModel urlModel = new UrlModel();
         urlModel.setShortUrl("short456");
         urlModel.setFullUrl("https://example.com/another-url");
-        urlRepo.save(urlModel);
+        IUrlRepo.save(urlModel);
 
-        Optional<UrlModel> foundUrlModel = urlRepo.findByShortUrl("short456");
+        Optional<UrlModel> foundUrlModel = IUrlRepo.findByShortUrl("short456");
 
         assertTrue(foundUrlModel.isPresent());
         assertEquals("https://example.com/another-url", foundUrlModel.get().getFullUrl());
@@ -47,9 +47,9 @@ public class UrlRepoTests {
         UrlModel urlModel = new UrlModel();
         urlModel.setShortUrl("short789");
         urlModel.setFullUrl("https://example.com/yet-another-url");
-        urlRepo.save(urlModel);
+        IUrlRepo.save(urlModel);
 
-        Optional<UrlModel> foundUrlModel = urlRepo.findByFullUrl("https://example.com/yet-another-url");
+        Optional<UrlModel> foundUrlModel = IUrlRepo.findByFullUrl("https://example.com/yet-another-url");
 
         assertTrue(foundUrlModel.isPresent());
         assertEquals("short789", foundUrlModel.get().getShortUrl());
@@ -60,11 +60,11 @@ public class UrlRepoTests {
         UrlModel urlModel = new UrlModel();
         urlModel.setShortUrl("shortToDelete");
         urlModel.setFullUrl("https://example.com/delete-me");
-        UrlModel savedUrlModel = urlRepo.save(urlModel);
+        UrlModel savedUrlModel = IUrlRepo.save(urlModel);
 
-        urlRepo.delete(savedUrlModel);
+        IUrlRepo.delete(savedUrlModel);
 
-        Optional<UrlModel> foundUrlModel = urlRepo.findById(savedUrlModel.getId());
+        Optional<UrlModel> foundUrlModel = IUrlRepo.findById(savedUrlModel.getId());
         assertFalse(foundUrlModel.isPresent());
     }
 }

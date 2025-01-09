@@ -19,6 +19,9 @@ class RedirectControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private IUrlRepo urlRepo;
+
     @Test
     void shouldRedirectToGoogle() throws Exception {
         mockMvc.perform(get("/a"))
@@ -28,8 +31,24 @@ class RedirectControllerTest {
 
     @Test
     void shouldRedirectToThing() throws Exception {
-        mockMvc.perform(get("/s/aaa"))
+        mockMvc.perform(get("/b/aaa"))
                 .andExpect(status().is3xxRedirection()) // Expect a 3xx redirection status
                 .andExpect(redirectedUrl("https://www.example.com/aaa")); // Expect redirection to google.com
+    }
+
+    @Test
+    void testShortUrlNotFoundAndThenFound() throws Exception {
+        // Step 1: Test that /s/111 returns 404
+        mockMvc.perform(get("/s/111"))
+                .andExpect(status().isNotFound()); // Expect a 404 Not Found
+
+        // Step 2: Add a short URL to the repository
+        UrlModel urlModel = new UrlModel(null, "111", "https://example.com/redirect-url");
+        urlRepo.save(urlModel);
+
+        // Step 3: Test that /s/111 now redirects to the full URL
+        mockMvc.perform(get("/s/111"))
+                .andExpect(status().is3xxRedirection()) // Expect a 3xx redirection status
+                .andExpect(redirectedUrl("https://example.com/redirect-url")); // Expect redirection to the added URL
     }
 }
