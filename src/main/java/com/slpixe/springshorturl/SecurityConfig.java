@@ -14,6 +14,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/a").permitAll() // Allow unauthenticated access to /a
+                        .requestMatchers("/s/*").permitAll() // Allow unauthenticated access to /a
                         .anyRequest().authenticated() // Require authentication for other endpoints
                 )
                 .formLogin(Customizer.withDefaults()); // Enable default form-based login

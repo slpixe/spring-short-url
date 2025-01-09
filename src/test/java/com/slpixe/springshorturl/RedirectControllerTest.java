@@ -25,4 +25,11 @@ class RedirectControllerTest {
                 .andExpect(status().is3xxRedirection()) // Expect a 3xx redirection status
                 .andExpect(redirectedUrl("https://www.google.com")); // Expect redirection to google.com
     }
+
+    @Test
+    void shouldRedirectToThing() throws Exception {
+        mockMvc.perform(get("/s/aaa"))
+                .andExpect(status().is3xxRedirection()) // Expect a 3xx redirection status
+                .andExpect(redirectedUrl("https://www.example.com/aaa")); // Expect redirection to google.com
+    }
 }
