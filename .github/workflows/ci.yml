@@ -1,12 +1,14 @@
 name: Run Tests with Coverage
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+#on:
+#  push:
+#    branches:
+#      - main
+#  pull_request:
+#    branches:
+#      - main
+
+on: [push, pull_request]
 
 jobs:
   test:
@@ -49,7 +51,7 @@ jobs:
         run: ./gradlew jacocoTestReport
 
       - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
 #          token: ${{ secrets.CODECOV_TOKEN }} # Add your Codecov token to GitHub Secrets
           files: build/reports/jacoco/test/jacocoTestReport.xml
