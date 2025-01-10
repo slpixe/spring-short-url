@@ -1,4 +1,4 @@
-name: Run Tests
+name: Run Tests with Coverage
 
 on:
   push:
@@ -35,7 +35,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: 21  # Ensure this matches your `build.gradle`
+          java-version: 21
 
       - name: Cache Gradle dependencies
         uses: actions/cache@v3
@@ -45,8 +45,13 @@ jobs:
           restore-keys: |
             gradle-${{ runner.os }}-
 
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v2
+      - name: Run Tests with Coverage
+        run: ./gradlew jacocoTestReport
 
-      - name: Run Tests
-        run: ./gradlew test
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+#          token: ${{ secrets.CODECOV_TOKEN }} # Add your Codecov token to GitHub Secrets
+          files: build/reports/jacoco/test/jacocoTestReport.xml
+          flags: unittests
+          name: codecov-coverage
