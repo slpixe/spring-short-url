@@ -51,4 +51,25 @@ class RedirectControllerTest {
                 .andExpect(status().is3xxRedirection()) // Expect a 3xx redirection status
                 .andExpect(redirectedUrl("https://example.com/redirect-url")); // Expect redirection to the added URL
     }
+
+    @Test
+    void testRedirectToFullUrl() throws Exception {
+        // Step 1: Test with valid short URL
+        UrlModel urlModel = new UrlModel(null, "validShort", "https://example.com/valid-url");
+        urlRepo.save(urlModel);
+
+        mockMvc.perform(get("/s/validShort"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("https://example.com/valid-url"));
+
+        // Step 2: Test with a non-existing short URL
+        mockMvc.perform(get("/s/nonExisting"))
+                .andExpect(status().isNotFound());
+
+        // Step 3: Test with empty short URL
+        mockMvc.perform(get("/s/"))
+                .andExpect(status().isNotFound());
+    }
+
+
 }
