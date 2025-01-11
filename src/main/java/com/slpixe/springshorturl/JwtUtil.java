@@ -16,7 +16,7 @@ public class JwtUtil {
         this.jwtConfig = jwtConfig;
     }
 
-    private Key getSigningKey() {
+   protected Key getSigningKey() {
         return Keys.hmacShaKeyFor(jwtConfig.getJwtSecret().getBytes());
     }
 
@@ -39,8 +39,16 @@ public class JwtUtil {
     }
 
     public boolean validateToken(String token, String username) {
-        String extractedUsername = extractUsername(token);
-        return extractedUsername.equals(username) && !isTokenExpired(token);
+        try {
+            String extractedUsername = extractUsername(token);
+            return extractedUsername.equals(username) && !isTokenExpired(token);
+        } catch (ExpiredJwtException e) {
+            // Token is expired
+            return false;
+        } catch (JwtException e) {
+            // Other issues with token
+            return false;
+        }
     }
 
     private boolean isTokenExpired(String token) {
