@@ -18,7 +18,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/register", "/api/login", "/s/**", "/api/setup-otp", "/health").permitAll() // Public endpoints
+                        .requestMatchers("/api/register", "/api/login", "/s/**", "/api/setup-otp", "/health", "/a", "/b/aaa").permitAll() // Public endpoints
                         .requestMatchers("/api/urls/**").authenticated() // Private URL management
                         .anyRequest().authenticated() // Secure all other endpoints
                 )

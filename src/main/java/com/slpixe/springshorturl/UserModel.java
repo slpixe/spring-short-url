@@ -5,7 +5,7 @@ import lombok.*;
 
 @Entity
 @Table(name = "users")
-@Data // Generates getters, setters, toString, etc.
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserModel {
@@ -17,8 +17,6 @@ public class UserModel {
     private String username;
 
     @Column(nullable = false)
-    private String password;
-
-    @Column(nullable = false, length = 20)
-    private String role; // e.g., "USER" or "ADMIN"
+    private String otpSecret;
 }
+
