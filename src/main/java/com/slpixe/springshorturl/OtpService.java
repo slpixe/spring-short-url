@@ -23,7 +23,7 @@ public class OtpService {
 
     public String generateOtpAuthUrl(String username, String secret) {
         String issuer = "SpringShortUrl"; // Replace with your application's name
-        return String.format("otpauth://totp/%s:%s?secret=%s&issuer=%s&image=https://i.imgur.com/okOi2wm.png",
+        return String.format("otpauth://totp/%s:%s?secret=%s&issuer=%s",
                 issuer, username, secret, issuer);
     }
 

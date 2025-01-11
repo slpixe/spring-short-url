@@ -39,7 +39,7 @@ public class AuthController {
         userRepo.save(user);
 
         return ResponseEntity.ok(Map.of(
-                "message", "User registered successfullyyyy",
+                "message", "User registered successfully",
                 "otpSecret", otpSecret,
                 "otpAuthUrl", otpAuthUrl,
                 "hostedQR", hostedQR
