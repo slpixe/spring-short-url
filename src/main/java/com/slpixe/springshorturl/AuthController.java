@@ -31,6 +31,7 @@ public class AuthController {
         // Generate OTP secret and QR code URL
         String otpSecret = otpService.generateSecretKey();
         String otpAuthUrl = otpService.generateOtpAuthUrl(username, otpSecret);
+        String hostedQR = otpService.generateQrCodeUrl(username, otpSecret);
 
         UserModel user = new UserModel();
         user.setUsername(username);
@@ -38,9 +39,10 @@ public class AuthController {
         userRepo.save(user);
 
         return ResponseEntity.ok(Map.of(
-                "message", "User registered successfully",
+                "message", "User registered successfullyyyy",
                 "otpSecret", otpSecret,
-                "otpAuthUrl", otpAuthUrl
+                "otpAuthUrl", otpAuthUrl,
+                "hostedQR", hostedQR
         ));
     }
 
