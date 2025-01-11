@@ -327,3 +327,9 @@ gradle-app.setting
 # End of https://www.toptal.com/developers/gitignore/api/java,gradle,maven,intellij,intellij+all,macos,osx
 
 codebase.md
+
+.env
+.gitignore
+
+# Ignore all application-{profile}.properties files
+application-*.properties
