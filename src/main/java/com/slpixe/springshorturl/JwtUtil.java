@@ -2,7 +2,6 @@ package com.slpixe.springshorturl;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -11,17 +10,21 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret}")
-    private String secret;
+    private final DotenvConfig dotenvConfig;
 
-    @Value("${jwt.expiration}")
-    private long expiration;
+    public JwtUtil(DotenvConfig dotenvConfig) {
+        this.dotenvConfig = dotenvConfig;
+    }
 
     private Key getSigningKey() {
+        // Pull the secret from .env
+        String secret = dotenvConfig.getJwtSecret();
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
     public String generateToken(String username) {
+        long expiration = dotenvConfig.getJwtExpiration();
+
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
