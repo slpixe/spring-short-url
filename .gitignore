@@ -329,3 +329,7 @@ gradle-app.setting
 codebase.md
 
 .env
+.gitignore
+
+# Ignore all application-{profile}.properties files
+application-*.properties

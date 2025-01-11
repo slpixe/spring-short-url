@@ -10,25 +10,21 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private final DotenvConfig dotenvConfig;
+    private final JwtConfig jwtConfig;
 
-    public JwtUtil(DotenvConfig dotenvConfig) {
-        this.dotenvConfig = dotenvConfig;
+    public JwtUtil(JwtConfig jwtConfig) {
+        this.jwtConfig = jwtConfig;
     }
 
     private Key getSigningKey() {
-        // Pull the secret from .env
-        String secret = dotenvConfig.getJwtSecret();
-        return Keys.hmacShaKeyFor(secret.getBytes());
+        return Keys.hmacShaKeyFor(jwtConfig.getJwtSecret().getBytes());
     }
 
     public String generateToken(String username) {
-        long expiration = dotenvConfig.getJwtExpiration();
-
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .setExpiration(new Date(System.currentTimeMillis() + jwtConfig.getJwtExpiration()))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
