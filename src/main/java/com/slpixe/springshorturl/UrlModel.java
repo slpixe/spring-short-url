@@ -5,18 +5,22 @@ import lombok.*;
 
 @Entity
 @Table(name = "url")
-@Data // Combines @Getter, @Setter, @ToString, @EqualsAndHashCode
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class UrlModel {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "short_url", nullable = false, length = 255)
+    @Column(name = "short_url", nullable = false, unique = true)
     private String shortUrl;
 
     @Column(name = "full_url", nullable = false, columnDefinition = "TEXT")
     private String fullUrl;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserModel user; // Link each URL to its owner
 }
+
