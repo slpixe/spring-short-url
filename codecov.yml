@@ -7,6 +7,17 @@ coverage:
         threshold: 0%
         base: auto
 
+#coverage:
+#  status:
+#    project:
+#      default:
+#        target: 75%  # Overall project coverage target
+#        threshold: 1%  # Allowable decrease before failure
+#    patch:
+#      default:
+#        target: 80%  # Require at least 80% coverage for new/modified lines
+#        threshold: 0%  # No decrease allowed for patch coverage
+
 comment:                  #this is a top-level key
   layout: " diff, flags, files"
   behavior: default

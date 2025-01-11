@@ -35,24 +35,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Check if the header is present and starts with "Bearer "
         if (header != null && header.startsWith("Bearer ")) {
-            // Extract the token from the header
             String token = header.substring(7);
-            // Extract the username from the token
             String username = jwtUtil.extractUsername(token);
 
-            // Ensure the username is not null and the user is not already authenticated
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                // Retrieve the user from the database
                 UserModel user = userRepo.findByUsername(username).orElse(null);
 
-                // Validate the token and ensure the user exists
                 if (user != null && jwtUtil.validateToken(token, username)) {
-                    // Create an authentication token
                     UsernamePasswordAuthenticationToken authenticationToken =
                             new UsernamePasswordAuthenticationToken(username, null, null);
-                    // Set the authentication details
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    // Set the authentication in the security context
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 }
             }
