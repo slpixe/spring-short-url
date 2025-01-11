@@ -36,16 +36,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Check if the header is present and starts with "Bearer "
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
+            System.out.println("jwtauth-token = " + token);
             String username = jwtUtil.extractUsername(token);
+            System.out.println("jwtauth-username = " + username);
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserModel user = userRepo.findByUsername(username).orElse(null);
+                System.out.println("jwtauth-user = " + user);
 
                 if (user != null && jwtUtil.validateToken(token, username)) {
                     UsernamePasswordAuthenticationToken authenticationToken =
-                            new UsernamePasswordAuthenticationToken(username, null, null);
+                            new UsernamePasswordAuthenticationToken(user, null, null);
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
+                    // Log the SecurityContextHolder contents
+                    System.out.println("jwtfilter - SecurityContext Authentication: " +
+                            SecurityContextHolder.getContext().getAuthentication());
                 }
             }
         }
