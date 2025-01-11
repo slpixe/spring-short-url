@@ -2,6 +2,7 @@ package com.slpixe.springshorturl;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -88,5 +89,34 @@ class JwtUtilTest {
                 .compact();
 
         assertFalse(jwtUtil.validateToken(token, "testUser"));
+    }
+
+    @Test
+    void shouldReturnFalseForExpiredToken() {
+        // Arrange
+        String expiredToken = Jwts.builder()
+                .setSubject("testUser")
+                .setIssuedAt(new Date(System.currentTimeMillis() - 1000)) // Issued in the past
+                .setExpiration(new Date(System.currentTimeMillis() - 1000)) // Expired immediately
+                .signWith(Keys.hmacShaKeyFor("YourSecretKeyHereFjfiewojfioewjfewjifejwofjewiofjweoifw".getBytes()), SignatureAlgorithm.HS256)
+                .compact();
+
+        // Act
+        boolean result = jwtUtil.validateToken(expiredToken, "testUser");
+
+        // Assert
+        assertFalse(result); // Expect false due to expired token
+    }
+
+    @Test
+    void shouldReturnFalseForMalformedToken() {
+        // Arrange
+        String malformedToken = "malformed.jwt.token";
+
+        // Act
+        boolean result = jwtUtil.validateToken(malformedToken, "testUser");
+
+        // Assert
+        assertFalse(result); // Expect false due to JwtException
     }
 }
