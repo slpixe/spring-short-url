@@ -1,16 +1,12 @@
 name: Run Tests with Coverage
 
-#on:
-#  push:
-#    branches:
-#      - main
-#  pull_request:
-#    branches:
-#      - main
-
-on: [push, pull_request]
-#on: [pull_request]
-#on: [push]
+on:
+  push: # Trigger workflow on all branches for pushes
+    branches:
+      - '**' # Matches all branches
+  pull_request: # Trigger workflow on pull requests targeting main
+    branches:
+      - main
 
 jobs:
   test:
