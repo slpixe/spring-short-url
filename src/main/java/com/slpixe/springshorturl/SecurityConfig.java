@@ -13,50 +13,33 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 public class SecurityConfig {
 
-    /**
-     * Make sure JwtAuthenticationFilter is declared as a bean.
-     * This ensures Spring can auto-inject it into securityFilterChain(...)
-     */
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtil jwtUtil, UserRepo userRepo) {
         return new JwtAuthenticationFilter(jwtUtil, userRepo);
     }
 
-    /**
-     * The main security filter chain:
-     *  - Disables CSRF
-     *  - Permits select endpoints (register, login, etc.)
-     *  - Permits /error to avoid 403 on error forward
-     *  - Enforces JWT-based stateless sessions
-     *  - Installs JwtAuthenticationFilter before UsernamePasswordAuthenticationFilter
-     */
     @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http,
-            JwtAuthenticationFilter jwtAuthenticationFilter
-    ) throws Exception {
-
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
+                // Disable CSRF for stateless APIs
                 .csrf(AbstractHttpConfigurer::disable)
+                // Configure authorization rules
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/register", "/api/login", "/s/**", "/api/setup-otp",
-                                "/health", "/a", "/b/aaa").permitAll()
-                        .requestMatchers("/error").permitAll() // explicitly allow the Spring Boot error page
-                        .requestMatchers("/api/urls/**").authenticated()
-                        .anyRequest().authenticated()
+                        .requestMatchers(
+                                "/api/register", "/api/login", "/s/**", "/api/setup-otp",
+                                "/health", "/a", "/b/aaa", "/error"
+                        ).permitAll() // Public endpoints
+                        .requestMatchers("/api/urls/**").authenticated() // Protected endpoints
+                        .anyRequest().authenticated() // All other requests require authentication
                 )
+                // Set session management to stateless
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                // Our custom JWT filter should run before the default UsernamePasswordAuthenticationFilter
+                // Add JWT authentication filter before the default authentication filter
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    /**
-     * Optional: Only needed if you do username/password auth
-     * and call authenticationManager.authenticate(...) somewhere
-     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
