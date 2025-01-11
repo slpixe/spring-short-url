@@ -28,8 +28,10 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
         }
 
-        // Generate OTP secret
+        // Generate OTP secret and QR code URL
         String otpSecret = otpService.generateSecretKey();
+        String otpAuthUrl = otpService.generateOtpAuthUrl(username, otpSecret);
+
         UserModel user = new UserModel();
         user.setUsername(username);
         user.setOtpSecret(otpSecret);
@@ -37,7 +39,8 @@ public class AuthController {
 
         return ResponseEntity.ok(Map.of(
                 "message", "User registered successfully",
-                "otpSecret", otpSecret
+                "otpSecret", otpSecret,
+                "otpAuthUrl", otpAuthUrl
         ));
     }
 

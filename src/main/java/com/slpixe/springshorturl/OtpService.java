@@ -16,4 +16,11 @@ public class OtpService {
     public boolean validateOtp(String secret, int otp) {
         return gAuth.authorize(secret, otp); // Validate OTP
     }
+
+    public String generateOtpAuthUrl(String username, String secret) {
+        String issuer = "YourAppName"; // Replace with your application's name
+        return String.format("otpauth://totp/%s:%s?secret=%s&issuer=%s",
+                issuer, username, secret, issuer);
+    }
+
 }
