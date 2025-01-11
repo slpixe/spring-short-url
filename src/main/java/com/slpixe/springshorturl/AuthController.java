@@ -21,6 +21,9 @@ public class AuthController {
     @Autowired
     private OtpService otpService;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody Map<String, String> userDetails) {
         String username = userDetails.get("username");
@@ -58,7 +61,12 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid OTP");
         }
 
-        // Generate JWT or handle session creation
-        return ResponseEntity.ok(Map.of("message", "Login successful"));
+        // Generate JWT
+        String token = jwtUtil.generateToken(username);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Login successful",
+                "token", token
+        ));
     }
 }
