@@ -75,6 +75,7 @@ hibernate {
 tasks.named('test') {
     outputs.dir snippetsDir
     useJUnitPlatform()
+    systemProperty "spring.profiles.active", "test"
 }
 
 tasks.named('asciidoctor') {
