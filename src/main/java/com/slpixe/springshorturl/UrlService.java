@@ -29,4 +29,9 @@ public class UrlService {
     public List<UrlModel> getUrlsByUser(UserModel user) {
         return urlRepo.findByUser(user);
     }
+
+    public Optional<UrlModel> getUrlByIdAndUser(Long id, UserModel user) {
+        return urlRepo.findById(id)
+                .filter(url -> url.getUser().getId().equals(user.getId())); // Ensure it belongs to the user
+    }
 }
