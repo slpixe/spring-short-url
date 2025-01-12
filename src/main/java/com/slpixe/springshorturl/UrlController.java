@@ -67,10 +67,22 @@ public class UrlController {
     public ResponseEntity<?> updateUrl(
             @AuthenticationPrincipal UserModel user,
             @PathVariable Long id,
-            @RequestBody UrlModel updatedUrl
+            @RequestBody @Valid UrlModel updatedUrl
     ) {
-        // Placeholder for updating a URL
-        return ResponseEntity.ok("Updating a URL is not yet implemented.");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResponse("User not authenticated"));
+        }
+
+        try {
+            UrlModel updated = urlService.updateUrl(id, updatedUrl, user);
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("An unexpected error occurred: " + e.getMessage()));
+        }
     }
 
     @DeleteMapping("/{id}")

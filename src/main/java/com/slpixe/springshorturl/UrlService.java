@@ -34,4 +34,16 @@ public class UrlService {
         return urlRepo.findById(id)
                 .filter(url -> url.getUser().getId().equals(user.getId())); // Ensure it belongs to the user
     }
+
+    @Transactional
+    public UrlModel updateUrl(Long id, UrlModel updatedUrl, UserModel user) {
+        return urlRepo.findById(id)
+                .filter(url -> url.getUser().getId().equals(user.getId())) // Validate ownership
+                .map(existingUrl -> {
+                    existingUrl.setShortUrl(updatedUrl.getShortUrl());
+                    existingUrl.setFullUrl(updatedUrl.getFullUrl());
+                    return urlRepo.save(existingUrl);
+                })
+                .orElseThrow(() -> new IllegalArgumentException("URL not found or does not belong to the user"));
+    }
 }
