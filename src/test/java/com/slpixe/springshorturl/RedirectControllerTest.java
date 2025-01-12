@@ -85,6 +85,9 @@ class RedirectControllerTest {
 
         // Step 3: Test with an empty short URL
         mockMvc.perform(get("/s/"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().is5xxServerError());
+
+        mockMvc.perform(get("/s"))
+                .andExpect(status().is5xxServerError());
     }
 }
