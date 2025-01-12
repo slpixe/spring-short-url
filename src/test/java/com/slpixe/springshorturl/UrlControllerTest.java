@@ -200,19 +200,69 @@ public class UrlControllerTest {
     }
 
     @Test
-    public void whenUrlBelongsToUser_thenUpdatesSuccessfully() throws Exception {
+    public void whenUpdatingShortUrl_thenUpdatesSuccessfully() throws Exception {
+        // Step 1: Authenticate as the creator
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, List.of())
         );
 
+        // Step 2: Save the initial URL
         UrlModel testUrl = new UrlModel(null, "shortToUpdate", "https://example.com", testUser);
         testUrl = urlRepo.save(testUrl);
 
-        String updatedRequest = "{ \"shortUrl\": \"updatedShort\", \"fullUrl\": \"https://updated-example.com\" }";
+        // Step 3: Update the shortUrl
+        String updateRequest = "{ \"shortUrl\": \"updatedShort\", \"fullUrl\": \"https://example.com\" }";
 
+        // Step 4: Perform the PUT request and validate
         mockMvc.perform(put("/api/urls/" + testUrl.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(updatedRequest))
+                        .content(updateRequest))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.shortUrl").value("updatedShort"))
+                .andExpect(jsonPath("$.fullUrl").value("https://example.com")); // Ensure fullUrl remains unchanged
+    }
+
+    @Test
+    public void whenUpdatingFullUrl_thenUpdatesSuccessfully() throws Exception {
+        // Step 1: Authenticate as the creator
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(testUser, null, List.of())
+        );
+
+        // Step 2: Save the initial URL
+        UrlModel testUrl = new UrlModel(null, "shortToUpdate", "https://example.com", testUser);
+        testUrl = urlRepo.save(testUrl);
+
+        // Step 3: Update the fullUrl
+        String updateRequest = "{ \"shortUrl\": \"shortToUpdate\", \"fullUrl\": \"https://updated-example.com\" }";
+
+        // Step 4: Perform the PUT request and validate
+        mockMvc.perform(put("/api/urls/" + testUrl.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateRequest))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.shortUrl").value("shortToUpdate")) // Ensure shortUrl remains unchanged
+                .andExpect(jsonPath("$.fullUrl").value("https://updated-example.com"));
+    }
+
+    @Test
+    public void whenUpdatingShortUrlAndFullUrl_thenUpdatesSuccessfully() throws Exception {
+        // Step 1: Authenticate as the creator
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(testUser, null, List.of())
+        );
+
+        // Step 2: Save the initial URL
+        UrlModel testUrl = new UrlModel(null, "shortToUpdate", "https://example.com", testUser);
+        testUrl = urlRepo.save(testUrl);
+
+        // Step 3: Update both shortUrl and fullUrl
+        String updateRequest = "{ \"shortUrl\": \"updatedShort\", \"fullUrl\": \"https://updated-example.com\" }";
+
+        // Step 4: Perform the PUT request and validate
+        mockMvc.perform(put("/api/urls/" + testUrl.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateRequest))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.shortUrl").value("updatedShort"))
                 .andExpect(jsonPath("$.fullUrl").value("https://updated-example.com"));
