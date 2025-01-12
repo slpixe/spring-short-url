@@ -86,11 +86,21 @@ public class UrlController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUrl(
-            @AuthenticationPrincipal UserModel user,
-            @PathVariable Long id
-    ) {
-        // Placeholder for deleting a URL
-        return ResponseEntity.ok("Deleting a URL is not yet implemented.");
+    public ResponseEntity<?> deleteUrl(@AuthenticationPrincipal UserModel user, @PathVariable Long id) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResponse("User not authenticated"));
+        }
+
+        try {
+            urlService.deleteUrl(id, user);
+            return ResponseEntity.ok().body("URL deleted successfully");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("An unexpected error occurred: " + e.getMessage()));
+        }
     }
+
 }

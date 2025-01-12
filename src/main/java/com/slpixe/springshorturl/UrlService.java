@@ -46,4 +46,13 @@ public class UrlService {
                 })
                 .orElseThrow(() -> new IllegalArgumentException("URL not found or does not belong to the user"));
     }
+
+    @Transactional
+    public void deleteUrl(Long id, UserModel user) {
+        urlRepo.findById(id)
+                .filter(url -> url.getUser().getId().equals(user.getId())) // Validate ownership
+                .ifPresentOrElse(urlRepo::delete,
+                        () -> { throw new IllegalArgumentException("URL not found or does not belong to the user"); });
+    }
+
 }
