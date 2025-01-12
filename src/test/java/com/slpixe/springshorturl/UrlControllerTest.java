@@ -185,12 +185,32 @@ public class UrlControllerTest {
     }
 
     @Test
-    public void whenUrlDoesNotExistOrBelongsToAnotherUser_thenReturnsNotFound() throws Exception {
+    public void whenUrlDoesNotExist_thenReturnsNotFound() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, List.of())
         );
 
         mockMvc.perform(get("/api/urls/9999")) // Non-existent ID
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("URL not found or does not belong to the user"));
+    }
+
+    @Test
+    public void whenUrlDoesNotBelongToUser_thenReturnsNotFound() throws Exception {
+        // User-2 Setup
+        UserModel user2 = userRepo.save(new UserModel(null, "user2", "otpSecret2"));
+
+        // Create a URL belonging to User-1
+        UrlModel testUrl = new UrlModel(null, "shortTest", "https://example.com", testUser);
+        testUrl = urlRepo.save(testUrl);
+
+        // Authenticate as User-2
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(user2, null, List.of())
+        );
+
+        // Attempt to access User-1's URL
+        mockMvc.perform(get("/api/urls/" + testUrl.getId()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("URL not found or does not belong to the user"));
     }
