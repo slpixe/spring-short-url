@@ -52,26 +52,23 @@ public class GlobalExceptionHandlerTest {
 
     @Test
     public void whenIllegalArgumentException_thenReturnsBadRequest() throws Exception {
-        // Step 1: Mock the authenticated user with valid Authentication
         UserModel mockUser = new UserModel(1L, "testuser", "otpSecret");
         SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(mockUser, null, List.of()) // Empty authorities list
+                new UsernamePasswordAuthenticationToken(mockUser, null, List.of())
         );
 
-        // Step 2: Mock UrlService behavior to throw IllegalArgumentException
+        // Mock UrlService to throw IllegalArgumentException
         doThrow(new IllegalArgumentException("Short URL already exists: duplicate"))
                 .when(urlService)
                 .createUrl(org.mockito.ArgumentMatchers.any(UrlModel.class), org.mockito.ArgumentMatchers.eq(mockUser));
 
-        // Step 3: Simulate the duplicate shortUrl request
         String duplicateShortUrlRequest = "{ \"shortUrl\": \"duplicate\", \"fullUrl\": \"https://example.com\" }";
 
-        // Step 4: Perform the POST request and validate response
         mockMvc.perform(post("/api/urls")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(duplicateShortUrlRequest))
-                .andExpect(status().isBadRequest()) // Expect 400 Bad Request
-                .andExpect(jsonPath("$.error").value("Short URL already exists: duplicate")); // Validate error message
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Short URL already exists: duplicate"));
     }
 
 }
