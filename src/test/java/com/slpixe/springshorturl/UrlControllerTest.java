@@ -132,22 +132,6 @@ public class UrlControllerTest {
     }
 
     @Test
-    void testUpdateUrlAuthorized() throws Exception {
-        // Authenticated user
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(testUser, null, List.of())
-        );
-
-        // The controller currently returns a placeholder message
-        mockMvc.perform(put("/api/urls/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{ \"shortUrl\": \"updateShort\", \"fullUrl\": \"https://example.com/update\" }")
-                )
-                .andExpect(status().isOk())
-                .andExpect(content().string("Updating a URL is not yet implemented."));
-    }
-
-    @Test
     void testDeleteUrlReturns401WhenNullUser() throws Exception {
         // No auth -> expect 401
         mockMvc.perform(delete("/api/urls/1"))
@@ -213,5 +197,107 @@ public class UrlControllerTest {
         mockMvc.perform(get("/api/urls/" + testUrl.getId()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("URL not found or does not belong to the user"));
+    }
+
+    @Test
+    public void whenUpdatingShortUrl_thenUpdatesSuccessfully() throws Exception {
+        // Step 1: Authenticate as the creator
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(testUser, null, List.of())
+        );
+
+        // Step 2: Save the initial URL
+        UrlModel testUrl = new UrlModel(null, "shortToUpdate", "https://example.com", testUser);
+        testUrl = urlRepo.save(testUrl);
+
+        // Step 3: Update the shortUrl
+        String updateRequest = "{ \"shortUrl\": \"updatedShort\", \"fullUrl\": \"https://example.com\" }";
+
+        // Step 4: Perform the PUT request and validate
+        mockMvc.perform(put("/api/urls/" + testUrl.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateRequest))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.shortUrl").value("updatedShort"))
+                .andExpect(jsonPath("$.fullUrl").value("https://example.com")); // Ensure fullUrl remains unchanged
+    }
+
+    @Test
+    public void whenUpdatingFullUrl_thenUpdatesSuccessfully() throws Exception {
+        // Step 1: Authenticate as the creator
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(testUser, null, List.of())
+        );
+
+        // Step 2: Save the initial URL
+        UrlModel testUrl = new UrlModel(null, "shortToUpdate", "https://example.com", testUser);
+        testUrl = urlRepo.save(testUrl);
+
+        // Step 3: Update the fullUrl
+        String updateRequest = "{ \"shortUrl\": \"shortToUpdate\", \"fullUrl\": \"https://updated-example.com\" }";
+
+        // Step 4: Perform the PUT request and validate
+        mockMvc.perform(put("/api/urls/" + testUrl.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateRequest))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.shortUrl").value("shortToUpdate")) // Ensure shortUrl remains unchanged
+                .andExpect(jsonPath("$.fullUrl").value("https://updated-example.com"));
+    }
+
+    @Test
+    public void whenUpdatingShortUrlAndFullUrl_thenUpdatesSuccessfully() throws Exception {
+        // Step 1: Authenticate as the creator
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(testUser, null, List.of())
+        );
+
+        // Step 2: Save the initial URL
+        UrlModel testUrl = new UrlModel(null, "shortToUpdate", "https://example.com", testUser);
+        testUrl = urlRepo.save(testUrl);
+
+        // Step 3: Update both shortUrl and fullUrl
+        String updateRequest = "{ \"shortUrl\": \"updatedShort\", \"fullUrl\": \"https://updated-example.com\" }";
+
+        // Step 4: Perform the PUT request and validate
+        mockMvc.perform(put("/api/urls/" + testUrl.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateRequest))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.shortUrl").value("updatedShort"))
+                .andExpect(jsonPath("$.fullUrl").value("https://updated-example.com"));
+    }
+
+    @Test
+    public void whenUrlDoesNotBelongToUser_thenUpdateFails() throws Exception {
+        UserModel anotherUser = userRepo.save(new UserModel(null, "anotherUser", "otpSecret"));
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(anotherUser, null, List.of())
+        );
+
+        UrlModel testUrl = new UrlModel(null, "shortToUpdate", "https://example.com", testUser);
+        testUrl = urlRepo.save(testUrl);
+
+        String updatedRequest = "{ \"shortUrl\": \"updatedShort\", \"fullUrl\": \"https://updated-example.com\" }";
+
+        mockMvc.perform(put("/api/urls/" + testUrl.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updatedRequest))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("URL not found or does not belong to the user"));
+    }
+
+    @Test
+    public void whenUnauthenticated_thenUpdateFails() throws Exception {
+        UrlModel testUrl = new UrlModel(null, "shortToUpdate", "https://example.com", testUser);
+        testUrl = urlRepo.save(testUrl);
+
+        String updatedRequest = "{ \"shortUrl\": \"updatedShort\", \"fullUrl\": \"https://updated-example.com\" }";
+
+        mockMvc.perform(put("/api/urls/" + testUrl.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updatedRequest))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("User not authenticated"));
     }
 }
