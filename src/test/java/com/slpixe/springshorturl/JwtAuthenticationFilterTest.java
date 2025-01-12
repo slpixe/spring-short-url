@@ -40,10 +40,13 @@ class JwtAuthenticationFilterTest {
         HttpServletResponse response = mock(HttpServletResponse.class);
         FilterChain filterChain = mock(FilterChain.class);
 
+        UserModel user = new UserModel(); // Create a mock user
+        user.setUsername(username);
+
         when(request.getHeader("Authorization")).thenReturn("Bearer " + validToken);
         when(jwtUtil.extractUsername(validToken)).thenReturn(username);
         when(jwtUtil.validateToken(validToken, username)).thenReturn(true);
-        when(userRepo.findByUsername(username)).thenReturn(java.util.Optional.of(new UserModel()));
+        when(userRepo.findByUsername(username)).thenReturn(java.util.Optional.of(user));
 
         // Act
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
@@ -52,7 +55,7 @@ class JwtAuthenticationFilterTest {
         UsernamePasswordAuthenticationToken authentication =
                 (UsernamePasswordAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
         assertNotNull(authentication);
-        assertEquals(username, authentication.getPrincipal());
+        assertEquals(user, authentication.getPrincipal()); // Assert that the principal is the user object
         verify(filterChain).doFilter(request, response);
     }
 
