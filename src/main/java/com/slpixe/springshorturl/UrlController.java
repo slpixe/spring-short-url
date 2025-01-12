@@ -35,10 +35,10 @@ public class UrlController {
             @RequestBody @Valid UrlModel url
     ) {
         // Validate the authenticated user
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ErrorResponse("User not authenticated"));
-        }
+//        if (user == null) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                    .body(new ErrorResponse("User not authenticated"));
+//        }
 
         try {
             // Delegate to the service for business logic
