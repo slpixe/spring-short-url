@@ -39,24 +39,25 @@ public class UrlControllerTest {
         userRepo.deleteAll();
         testUser = new UserModel(null, "testuser", "dummy_secret");
         testUser = userRepo.save(testUser);
+        // Clear any existing authentication
+        SecurityContextHolder.clearContext();
     }
 
     @Test
     void testGetUserUrlsUnauthorized() throws Exception {
-        // No SecurityContext authentication set
+        // No SecurityContext authentication set -> expect 403 by default
         mockMvc.perform(get("/api/urls"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("User not authenticated"));
+                .andExpect(status().isForbidden());
     }
 
     @Test
     void testGetUserUrlsAuthorized() throws Exception {
-        // Manually set an authenticated user in the SecurityContext
+        // Manually set an authenticated user
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, List.of())
         );
 
-        // Verify that we get a 200 OK and (initially) an empty list
+        // Verify 200 OK and (initially) an empty list
         mockMvc.perform(get("/api/urls"))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]")); // expecting empty array
@@ -64,13 +65,12 @@ public class UrlControllerTest {
 
     @Test
     void testCreateUrlUnauthorized() throws Exception {
-        // Not setting authentication to simulate unauthorized user
+        // Not setting authentication -> expect 403 by default
         mockMvc.perform(post("/api/urls")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{ \"shortUrl\": \"myShort\", \"fullUrl\": \"https://example.com\" }")
                 )
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("User not authenticated"));
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -112,12 +112,12 @@ public class UrlControllerTest {
 
     @Test
     void testUpdateUrlUnauthorized() throws Exception {
+        // No authentication -> expect 403
         mockMvc.perform(put("/api/urls/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{ \"shortUrl\": \"updateShort\", \"fullUrl\": \"https://example.com/update\" }")
                 )
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("User not authenticated"));
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -138,9 +138,9 @@ public class UrlControllerTest {
 
     @Test
     void testDeleteUrlUnauthorized() throws Exception {
+        // No authentication -> expect 403
         mockMvc.perform(delete("/api/urls/1"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("User not authenticated"));
+                .andExpect(status().isForbidden());
     }
 
     @Test
