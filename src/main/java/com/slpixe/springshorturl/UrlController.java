@@ -1,5 +1,6 @@
 package com.slpixe.springshorturl;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,14 +30,25 @@ public class UrlController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createUrl(@AuthenticationPrincipal UserModel user, @RequestBody UrlModel url) {
+    public ResponseEntity<?> createUrl(
+            @AuthenticationPrincipal UserModel user,
+            @RequestBody @Valid UrlModel url
+    ) {
+        // Validate the authenticated user
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResponse("User not authenticated"));
+        }
+
         try {
+            // Delegate to the service for business logic
             UrlModel createdUrl = urlService.createUrl(url, user);
             return ResponseEntity.ok(createdUrl);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateUrl(
