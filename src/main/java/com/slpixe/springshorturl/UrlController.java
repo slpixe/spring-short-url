@@ -1,6 +1,7 @@
 package com.slpixe.springshorturl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -16,8 +17,15 @@ public class UrlController {
 
     @GetMapping
     public ResponseEntity<?> getUserUrls(@AuthenticationPrincipal UserModel user) {
-        // Placeholder for fetching user URLs
-        return ResponseEntity.ok("Fetching user URLs is not yet implemented.");
+        // Validate the user in the controller
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResponse("User not authenticated"));
+        }
+
+        // Fetch the URLs from the service
+        List<UrlModel> userUrls = urlService.getUrlsByUser(user);
+        return ResponseEntity.ok(userUrls);
     }
 
     @PostMapping
