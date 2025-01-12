@@ -1,5 +1,6 @@
 package com.slpixe.springshorturl;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,6 +24,13 @@ public class SecurityConfig {
         http
                 // Disable CSRF for stateless APIs
                 .csrf(AbstractHttpConfigurer::disable)
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setContentType("application/json");
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter().write("{\"error\":\"User not authenticated\"}");
+                        })
+                )
                 // Configure authorization rules
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
