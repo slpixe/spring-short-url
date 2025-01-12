@@ -17,6 +17,16 @@ import java.util.List;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+/**
+ * This test class assumes that the SecurityConfig (or equivalent) allows requests
+ * to reach the controller so that the controller's own checks for a null user
+ * (returning 401) can be tested. If Spring Security blocks unauthenticated requests
+ * before they reach the controller, you'd see 403 (Forbidden) instead of 401 (Unauthorized).
+ *
+ * If you're seeing 403 from Spring Security, either configure /api/urls/** to permitAll()
+ * so that the controller can handle unauthenticated requests, or set a custom
+ * AuthenticationEntryPoint to explicitly send 401.
+ */
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -39,43 +49,44 @@ public class UrlControllerTest {
         userRepo.deleteAll();
         testUser = new UserModel(null, "testuser", "dummy_secret");
         testUser = userRepo.save(testUser);
-        // Clear any existing authentication
-        SecurityContextHolder.clearContext();
+        SecurityContextHolder.clearContext(); // clear any previous auth
     }
 
     @Test
-    void testGetUserUrlsUnauthorized() throws Exception {
-        // No SecurityContext authentication set -> expect 403 by default
+    void testGetUserUrlsReturns401WhenNullUser() throws Exception {
+        // No auth set -> controller should detect user == null and return 401
         mockMvc.perform(get("/api/urls"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("User not authenticated"));
     }
 
     @Test
     void testGetUserUrlsAuthorized() throws Exception {
-        // Manually set an authenticated user
+        // Authenticated user
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, List.of())
         );
 
-        // Verify 200 OK and (initially) an empty list
+        // Should return 200 and initially an empty array
         mockMvc.perform(get("/api/urls"))
                 .andExpect(status().isOk())
-                .andExpect(content().json("[]")); // expecting empty array
+                .andExpect(content().json("[]"));
     }
 
     @Test
-    void testCreateUrlUnauthorized() throws Exception {
-        // Not setting authentication -> expect 403 by default
+    void testCreateUrlReturns401WhenNullUser() throws Exception {
+        // No auth set -> controller should detect user == null and return 401
         mockMvc.perform(post("/api/urls")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{ \"shortUrl\": \"myShort\", \"fullUrl\": \"https://example.com\" }")
+                        .content("{\"shortUrl\":\"myShort\",\"fullUrl\":\"https://example.com\"}")
                 )
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("User not authenticated"));
     }
 
     @Test
     void testCreateUrlSuccessfully() throws Exception {
-        // Manually set an authenticated user
+        // Authenticated user
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, List.of())
         );
@@ -96,12 +107,11 @@ public class UrlControllerTest {
         UrlModel existingUrl = new UrlModel(null, "dupShort", "https://example.org", testUser);
         urlRepo.save(existingUrl);
 
-        // Authenticate as testUser
+        // Authenticated user
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, List.of())
         );
 
-        // Try to create another URL with the same shortUrl
         mockMvc.perform(post("/api/urls")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{ \"shortUrl\": \"dupShort\", \"fullUrl\": \"https://example.com/new\" }")
@@ -111,18 +121,19 @@ public class UrlControllerTest {
     }
 
     @Test
-    void testUpdateUrlUnauthorized() throws Exception {
-        // No authentication -> expect 403
+    void testUpdateUrlReturns401WhenNullUser() throws Exception {
+        // No auth -> expect controller to detect user == null and return 401
         mockMvc.perform(put("/api/urls/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{ \"shortUrl\": \"updateShort\", \"fullUrl\": \"https://example.com/update\" }")
                 )
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("User not authenticated"));
     }
 
     @Test
     void testUpdateUrlAuthorized() throws Exception {
-        // Manually set authenticated user
+        // Authenticated user
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, List.of())
         );
@@ -137,15 +148,16 @@ public class UrlControllerTest {
     }
 
     @Test
-    void testDeleteUrlUnauthorized() throws Exception {
-        // No authentication -> expect 403
+    void testDeleteUrlReturns401WhenNullUser() throws Exception {
+        // No auth -> expect 401
         mockMvc.perform(delete("/api/urls/1"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("User not authenticated"));
     }
 
     @Test
     void testDeleteUrlAuthorized() throws Exception {
-        // Manually set authenticated user
+        // Authenticated user
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, List.of())
         );
