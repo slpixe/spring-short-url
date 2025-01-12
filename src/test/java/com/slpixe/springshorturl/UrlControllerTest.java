@@ -140,19 +140,6 @@ public class UrlControllerTest {
     }
 
     @Test
-    void testDeleteUrlAuthorized() throws Exception {
-        // Authenticated user
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(testUser, null, List.of())
-        );
-
-        // The controller currently returns a placeholder message
-        mockMvc.perform(delete("/api/urls/1"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Deleting a URL is not yet implemented."));
-    }
-
-    @Test
     public void whenUrlExistsAndBelongsToUser_thenReturnsUrl() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(testUser, null, List.of())
@@ -299,5 +286,55 @@ public class UrlControllerTest {
                         .content(updatedRequest))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.error").value("User not authenticated"));
+    }
+
+    @Test
+    public void whenUrlBelongsToUser_thenDeletesSuccessfully() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(testUser, null, List.of())
+        );
+
+        UrlModel testUrl = new UrlModel(null, "shortToDelete", "https://example.com", testUser);
+        testUrl = urlRepo.save(testUrl);
+
+        mockMvc.perform(delete("/api/urls/" + testUrl.getId()))
+                .andExpect(status().isOk())
+                .andExpect(content().string("URL deleted successfully"));
+    }
+
+    @Test
+    public void whenUrlDoesNotBelongToUser_thenDeleteFails() throws Exception {
+        UserModel anotherUser = userRepo.save(new UserModel(null, "anotherUser", "otpSecret"));
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(anotherUser, null, List.of())
+        );
+
+        UrlModel testUrl = new UrlModel(null, "shortToDelete", "https://example.com", testUser);
+        testUrl = urlRepo.save(testUrl);
+
+        mockMvc.perform(delete("/api/urls/" + testUrl.getId()))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("URL not found or does not belong to the user"));
+    }
+
+    @Test
+    public void whenUnauthenticated_thenDeleteFails() throws Exception {
+        UrlModel testUrl = new UrlModel(null, "shortToDelete", "https://example.com", testUser);
+        testUrl = urlRepo.save(testUrl);
+
+        mockMvc.perform(delete("/api/urls/" + testUrl.getId()))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("User not authenticated"));
+    }
+
+    @Test
+    public void whenUrlDoesNotExist_thenDeleteFails() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(testUser, null, List.of())
+        );
+
+        mockMvc.perform(delete("/api/urls/9999")) // Non-existent ID
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("URL not found or does not belong to the user"));
     }
 }
