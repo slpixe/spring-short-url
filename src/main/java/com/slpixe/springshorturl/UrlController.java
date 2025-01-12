@@ -29,6 +29,19 @@ public class UrlController {
         return ResponseEntity.ok(userUrls);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getUrlById(@AuthenticationPrincipal UserModel user, @PathVariable Long id) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResponse("User not authenticated"));
+        }
+
+        return urlService.getUrlByIdAndUser(id, user)
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ErrorResponse("URL not found or does not belong to the user"))); // Error response
+    }
+
     @PostMapping
     public ResponseEntity<?> createUrl(
             @AuthenticationPrincipal UserModel user,
