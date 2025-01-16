@@ -12,20 +12,20 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:latest
-        env:
-          POSTGRES_USER: myuser
-          POSTGRES_PASSWORD: secret
-          POSTGRES_DB: mydatabase
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U myuser"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+#    services:
+#      postgres:
+#        image: postgres:latest
+#        env:
+#          POSTGRES_USER: myuser
+#          POSTGRES_PASSWORD: secret
+#          POSTGRES_DB: mydatabase
+#        ports:
+#          - 5432:5432
+#        options: >-
+#          --health-cmd="pg_isready -U myuser"
+#          --health-interval=10s
+#          --health-timeout=5s
+#          --health-retries=5
 
     steps:
       - name: Checkout code
@@ -49,6 +49,7 @@ jobs:
         run: ./gradlew jacocoTestReport
         env:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          SPRING_PROFILES_ACTIVE: ${{ secrets.SPRING_PROFILES_ACTIVE }}
 
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v5
